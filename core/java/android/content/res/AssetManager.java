@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
- * This code has been modified.  Portions copyright (C) 2010, T-Mobile USA, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +17,8 @@
 package android.content.res;
 
 import android.os.ParcelFileDescriptor;
+import android.os.Trace;
 import android.util.Log;
-import android.util.SparseArray;
 import android.util.TypedValue;
 
 import java.io.FileNotFoundException;
@@ -79,20 +78,6 @@ public final class AssetManager {
     private boolean mOpen = true;
     private HashMap<Integer, RuntimeException> mRefStacks; 
  
-    private String mAssetDir;
-    private String mAppName;
-
-    private boolean mThemeSupport;
-    private String mThemePackageName;
-    private int mThemeCookie;
-
-    /**
-     * Organize all added redirection maps using Java strong references to keep
-     * the native layer cleanup simple (that is, finalize() in Java will be
-     * responsible for delete in C++).
-     */
-    private SparseArray<PackageRedirectionMap> mRedirections;
-
     /**
      * Create a new AssetManager containing only the basic system assets.
      * Applications will not generally use this method, instead retrieving the
@@ -265,12 +250,6 @@ public final class AssetManager {
                     makeStringBlocks(true);
                 }
             }
-        }
-    }
-
-    /*package*/ final void recreateStringBlocks() {
-        synchronized (this) {
-            makeStringBlocks(true);
         }
     }
 
@@ -482,18 +461,6 @@ public final class AssetManager {
 
     /**
      * {@hide}
-     * Split a theme package with DRM-protected resources into two files.
-     * 
-     * @param packageFileName Original theme package file name.
-     * @param lockedFileName Name of the new "locked" file with DRM resources.
-     * @param drmProtectedresources Array of names of DRM-protected assets.
-     */
-    public final int splitDrmProtectedThemePackage(String packageFileName, String lockedFileName, String [] drmProtectedresources) {
-        return splitThemePackage(packageFileName, lockedFileName, drmProtectedresources);
-    }
-
-    /**
-     * {@hide}
      * Retrieve a non-asset as a compiled XML file.  Not for use by
      * applications.
      * 
@@ -636,7 +603,12 @@ public final class AssetManager {
      * the cookie of the added asset, or 0 on failure.
      * {@hide}
      */
-    public native final int addAssetPath(String path);
+    public final int addAssetPath(String path) {
+        int res = addAssetPathNative(path);
+        return res;
+    }
+
+    private native final int addAssetPathNative(String path);
 
     /**
      * Add multiple sets of assets to the asset manager at once.  See
@@ -656,110 +628,6 @@ public final class AssetManager {
         }
 
         return cookies;
-    }
-
-    /**
-     * Delete a set of theme assets from the asset manager. Not for use by
-     * applications. Returns true if succeeded or false on failure.
-     *
-     * @hide
-     */
-    public native final boolean detachThemePath(String packageName, int cookie);
-
-    /**
-     * Attach a set of theme assets to the asset manager. If necessary, this
-     * method will forcefully update the internal ResTable data structure.
-     *
-     * @return Cookie of the added asset or 0 on failure.
-     * @hide
-     */
-    public native final int attachThemePath(String path);
-
-    /**
-     * Sets a flag indicating that this AssetManager should have themes
-     * attached, according to the initial request to create it by the
-     * ApplicationContext.
-     *
-     * {@hide}
-     */
-    public final void setThemeSupport(boolean themeSupport) {
-        mThemeSupport = themeSupport;
-    }
-
-    /**
-     * Should this AssetManager have themes attached, according to the initial
-     * request to create it by the ApplicationContext?
-     *
-     * {@hide}
-     */
-    public final boolean hasThemeSupport() {
-        return mThemeSupport;
-    }
-
-    /**
-     * Apply a heuristic to match-up all attributes from the source style with
-     * attributes in the destination style. For each match, an entry in the
-     * package redirection map will be inserted.
-     *
-     * {@hide}
-     */
-    public native final boolean generateStyleRedirections(int resMapNative, int sourceStyle,
-            int destStyle);
-
-    /**
-     * Get package name of current theme (may return null).
-     * {@hide}
-     */
-    public String getThemePackageName() {
-        return mThemePackageName;
-    }
-
-    /**
-     * Sets package name and highest level style id for current theme (null, 0 is allowed).
-     * {@hide}
-     */
-    public void setThemePackageName(String packageName) {
-        mThemePackageName = packageName;
-    }
-
-    /**
-     * Get asset cookie for current theme (may return 0).
-     * {@hide}
-     */
-    public int getThemeCookie() {
-        return mThemeCookie;
-    }
-
-    /**
-     * Sets asset cookie for current theme (0 if not a themed asset manager).
-     * {@hide}
-     */
-    public void setThemeCookie(int cookie) {
-        mThemeCookie = cookie;
-    }
-
-    /**
-     * Add a redirection map to the asset manager. All future resource lookups
-     * will consult this map.
-     * {@hide}
-     */
-    public void addRedirections(PackageRedirectionMap map) {
-        if (mRedirections == null) {
-            mRedirections = new SparseArray<PackageRedirectionMap>(2);
-        }
-        mRedirections.append(map.getPackageId(), map);
-        addRedirectionsNative(map.getNativePointer());
-    }
-
-    /**
-     * Clear redirection map for the asset manager.
-     * {@hide}
-     */
-    public void clearRedirections() {
-        if (mRedirections != null) {
-            mRedirections.clear();
-        }
-        clearRedirectionsNative();
     }
 
     /**
@@ -791,7 +659,7 @@ public final class AssetManager {
             int orientation, int touchscreen, int density, int keyboard,
             int keyboardHidden, int navigation, int screenWidth, int screenHeight,
             int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-            int screenLayout, int uiInvertedMode, int uiMode, int majorVersion);
+            int screenLayout, int uiMode, int majorVersion);
 
     /**
      * Retrieve the resource identifier for the given resource name.
@@ -878,26 +746,6 @@ public final class AssetManager {
     private native final String[] getArrayStringResource(int arrayRes);
     private native final int[] getArrayStringInfo(int arrayRes);
     /*package*/ native final int[] getArrayIntResource(int arrayRes);
-
-    private native final int splitThemePackage(String srcFileName, String dstFileName, String [] drmProtectedAssetNames);
-
-    /**
-     * {@hide}
-     */
-    public native final int getBasePackageCount();
-
-    /**
-     * {@hide}
-     */
-    public native final String getBasePackageName(int index);
-
-    /**
-     * {@hide}
-     */
-    public native final int getBasePackageId(int index);
-
-    private native final void addRedirectionsNative(int redirectionMapNativePointer);
-    private native final void clearRedirectionsNative();
 
     private native final void init();
     private native final void destroy();

@@ -50,8 +50,12 @@
     <!-- Margin at the edge of the screen to ignore touch events for in the windowshade. -->
     <dimen name="status_bar_edge_ignore">5dp</dimen>
 
-    <!-- Size of the fastscroll hint letter -->
+    <!-- Minimum size of the fastscroll overlay -->
     <dimen name="fastscroll_overlay_size">104dp</dimen>
+    <!-- Text size of the fastscroll overlay -->
+    <dimen name="fastscroll_overlay_text_size">24sp</dimen>
+    <!-- Padding of the fastscroll overlay -->
+    <dimen name="fastscroll_overlay_padding">16dp</dimen>
     <!-- Width of the fastscroll thumb -->
     <dimen name="fastscroll_thumb_width">64dp</dimen>
     <!-- Height of the fastscroll thumb -->
@@ -69,9 +73,6 @@
     <dimen name="password_keyboard_horizontalGap">3dip</dimen>
     <!-- Default vertical gap between keys in the password keyboard (used by keyguard) -->
     <dimen name="password_keyboard_verticalGap">9dip</dimen>
-
-    <!-- Default maximum height for the widget pager in the keyguard -->
-    <dimen name="keyguard_widget_pager_max_height">480dp</dimen>
 
     <!-- Size of lockscreen outerring on unsecure unlock LockScreen -->
     <dimen name="keyguard_lockscreen_outerring_diameter">270dp</dimen>
@@ -310,10 +311,7 @@
     <dimen name="keyguard_security_width">320dp</dimen>
 
     <!-- Height of the sliding KeyguardSecurityContainer (includes 2x keyguard_security_view_margin) -->
-    <dimen name="keyguard_security_height">350dp</dimen>
-
-    <!-- Height of the sliding KeyguardSecurityContainer with hidden widget (includes 2x keyguard_security_view_margin) -->
-    <dimen name="keyguard_security_no_widget_height">450dp</dimen>
+    <dimen name="keyguard_security_height">400dp</dimen>
 
     <!-- Margin around the various security views -->
     <dimen name="keyguard_security_view_margin">8dp</dimen>
@@ -346,12 +344,19 @@
     security mode. -->
     <dimen name="kg_small_widget_height">160dp</dimen>
 
-    <!-- Left padding of num pad key on keyguard -->
-    <dimen name="kg_num_pad_key_padding_left">10dp</dimen>
+    <!-- Rounded corner radius for video subtitles. -->
+    <dimen name="subtitle_corner_radius">2dp</dimen>
 
-    <dimen name="icon_size_20">20.0dip</dimen>
-    <dimen name="icon_size_15">15.0dip</dimen>
-    <dimen name="notification_ribbon_padding">16dp</dimen>
-    <dimen name="lockscreen_ribbon_padding">16dp</dimen>
+    <!-- Shadow radius for video subtitles. -->
+    <dimen name="subtitle_shadow_radius">2dp</dimen>
+
+    <!-- Shadow offset for video subtitles. -->
+    <dimen name="subtitle_shadow_offset">2dp</dimen>
+
+    <!-- Outline width for video subtitles. -->
+    <dimen name="subtitle_outline_width">2dp</dimen>
+
+    <!-- width of ImmersiveModeConfirmation (-1 for match_parent) -->
+    <dimen name="immersive_mode_cling_width">-1px</dimen>
 
 </resources>
